@@ -69,5 +69,9 @@ export default class Model{
         this.save();
     }
 
-    
+    editTodo(id, values){
+        const index = this.findItemList(id);
+        Object.assign(this.listTable[index], values);
+        this.save();
+    }
 }
