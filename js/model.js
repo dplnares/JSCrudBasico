@@ -29,7 +29,7 @@ export default class Model{
     }
 
     getTodos(){
-        return this.listTable;
+        return this.listTable.map((todo) => ({...todo}));
     }
 
     findItemList(id){

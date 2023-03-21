@@ -1,5 +1,6 @@
 import AddTodo from './components/add-todo.js';
 import Modal from './components/modal.js';
+import Filters from './components/filters.js';
 
 export default class View{
     constructor(){
@@ -8,9 +9,12 @@ export default class View{
         //  Llamamos a la función de la clase add-todo.js
         this.addTodoForm = new AddTodo();
         this.modal = new Modal();
-        
+        this.filters = new Filters();
+
+
         this.addTodoForm.onClick((title, description) => this.addTodo(title, description));
         this.modal.onClick((id, values) => this.editTodo(id, values));
+        this.filters.onClick((filters) => this.filter(filters));
     }
 
     setModel(model){
@@ -20,6 +24,33 @@ export default class View{
     render(){
         const listTable = this.model.getTodos();
         listTable.forEach((itemList) => this.createRow(itemList));
+    }
+
+    filter(filters){
+        const {type, words} = filters;
+        //  Eliminar el primer elemento usando [,...rows] -> Solo se muestre lo que quiero filtrar
+        const [, ...rows] = this.table.getElementsByTagName('tr');
+        for(const row of rows){
+            const [title, description, completed] = row.children;
+            let shouldHide = false;
+
+            if(words){
+                shouldHide = !title.innerText.includes(words) && !description.innerText.includes(words);
+            }
+
+            const shouldBeCompleted = type === 'completed';
+            const isCompleted = completed.children[0].checked;
+
+            if(type !== 'all' && shouldBeCompleted !== isCompleted){
+                shouldHide = true;
+            }
+
+            if (shouldHide) {
+                row.classList.add('d-none');
+            } else {
+                row.classList.remove('d-none');
+            }
+        }
     }
 
     addTodo(title, description){
@@ -71,7 +102,12 @@ export default class View{
         editBtn.innerHTML = '<i class="fa fa-pencil"></i>';
         editBtn.setAttribute('data-toggle', 'modal');
         editBtn.setAttribute('data-target', '#modal');
-        editBtn.onclick = () => this.modal.setValues(todo);
+        editBtn.onclick = () => this.modal.setValues({
+            id: todo.id,
+            title: row.children[0].innerText,
+            description: row.children[1].innerText,
+            completed: row.children[2].children[0].innerText,
+        });
         row.children[3].appendChild(editBtn);
 
         //  AÑADIR EL BOTON DE ELIMINAR PARA CADA ELEMENTO CREADO
